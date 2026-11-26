@@ -1,0 +1,163 @@
+{
+  "_help": "Owner-only settings for ox in this project. Agents can't change this file during unattended runs, and subagents never can. Change the mode with /ox:mode. Explained in the ox:playbook skill.",
+  "profile": "phone-app",
+  "baseBranch": "main",
+  "mode": "speed",
+  "stage": 0,
+  "paused": true,
+  "maxBuilders": null,
+  "useLeads": true,
+  "specApproved": false,
+  "_specNote": "specApproved is false while an idea-first project waits for the owner to approve the spec and plan; a hook blocks building until it is true. Only an attended session can change it.",
+  "weeklyResetDay": "Tue",
+  "schedule": {
+    "normal": {
+      "runs": [
+        "01:00"
+      ],
+      "days": [
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat"
+      ]
+    },
+    "burst": {
+      "runs": [
+        "01:00",
+        "09:00",
+        "17:00"
+      ],
+      "backToBack": true,
+      "maxRunsInARow": 4,
+      "days": [
+        "Sun",
+        "Mon"
+      ]
+    }
+  },
+  "_burstNote": "Burst days are the two days before your weekly limit resets, so leftover credits get used. Set them with: node <kit>/scripts/install-project-files.mjs --project . --reset-day Tue (or ask Claude: /ox:doctor fix). maxRunsInARow is a hard stop so back-to-back runs can't go on forever.",
+  "onlyWhenPluggedIn": true,
+  "maxRunHours": 6,
+  "permissionMode": "acceptEdits",
+  "maxBudgetUsdPerRun": null,
+  "tests": {
+    "command": "npm run test:unit --silent"
+  },
+  "gates": {
+    "_help": "What must pass before work moves on. item: once per item, fast. batch: the full regression, run when due; a pass moves the base branch. phase: slow end-to-end checks, at a check-in. Empty lists fall back to tests.command. See the gates page of the ox:playbook skill.",
+    "item": {
+      "commands": [
+        "npm run lint",
+        "npm run typecheck",
+        "npm run test:unit --silent"
+      ],
+      "_why": {
+        "lint": "undefined names, bad imports, unused code",
+        "typecheck": "a change that breaks a shared type or an adapter contract somewhere else",
+        "test:unit": "the changed logic is wrong; an AC id with no test"
+      }
+    },
+    "batch": {
+      "commands": [
+        "npm run test:unit --silent",
+        "npm run test:functions --silent",
+        "npm run test:rules --silent",
+        "npm run build"
+      ],
+      "every": {
+        "speed": 3,
+        "normal": 4,
+        "saver": 0
+      },
+      "_why": {
+        "test:unit": "one merged item broke the logic of another",
+        "test:functions": "backend and AI-gateway contract regressions, on recorded fixtures (no paid calls)",
+        "test:rules": "a family seeing or editing a kitchen that is not theirs; allowance counters writable from the app",
+        "build": "the production bundle no longer builds"
+      }
+    },
+    "phase": {
+      "commands": [
+        "npm run e2e",
+        "npm run build:android:debug"
+      ],
+      "_why": {
+        "e2e": "a key journey no longer works end to end at phone sizes, against the emulators",
+        "build:android:debug": "native config or a plugin broke the installable build (needs the Android SDK: the owner's computer or CI, not a cloud session)"
+      }
+    },
+    "riskPaths": [
+      "firestore.rules",
+      "storage.rules",
+      "firestore.indexes.json",
+      "functions/src/index.ts",
+      "functions/src/metering/**",
+      "packages/ai-gateway/src/contract/**",
+      "src/platform/**",
+      "src/data/**",
+      "**/migrations/**"
+    ],
+    "_status": "Designed at /ox:init. None of these scripts exist yet: PLAN item W-001 (test harness) creates them, and each is run and timed before the gates count as live."
+  },
+  "hooks": {
+    "agentsOff": [],
+    "sharedFiles": [
+      "package.json",
+      "package-lock.json",
+      "capacitor.config.*",
+      "firebase.json",
+      "firestore.rules",
+      "firestore.indexes.json",
+      "storage.rules",
+      "android/app/build.gradle",
+      "android/app/src/main/AndroidManifest.xml",
+      "ios/App/App/Info.plist",
+      "functions/package.json",
+      "functions/package-lock.json",
+      "packages/ai-gateway/package.json",
+      "tsconfig*.json",
+      "vite.config.*",
+      "src/app/routes.tsx",
+      "src/app/nav.tsx",
+      "src/platform/index.ts",
+      "functions/src/index.ts"
+    ],
+    "testGlobs": [
+      "tests/**",
+      "e2e/**",
+      "**/*.test.*",
+      "**/*.spec.*",
+      ".maestro/**",
+      "functions/test/**"
+    ],
+    "blockedCommands": [
+      {
+        "pattern": "submit[_-]?for[_-]?review|--submit-for-review",
+        "why": "submitting for store review is the owner's check-in."
+      },
+      {
+        "pattern": "--track[ =]+(production|beta|alpha)\\b",
+        "why": "uploads go to the internal testing track only; promoting builds is the owner's call."
+      },
+      {
+        "pattern": "firebase\\s+deploy\\b(?![^\\n]*--project[ =]+\\S*(dev|test|staging|emulator|demo))",
+        "why": "deploys go only to the dev project named in .ox/PROJECT.md (pass --project <dev id>). Production deploys are the owner's check-in."
+      },
+      {
+        "pattern": "npm\\s+publish\\b",
+        "why": "the shared AI-gateway package is installed from git, never published to a public registry."
+      },
+      {
+        "pattern": "npm\\s+run\\s+evals(?!:dry)",
+        "why": "the bake-off calls paid AI and receipt services. Only the owner starts it (npm run evals:dry is free and allowed)."
+      }
+    ],
+    "blockedPaths": [
+      "google-services.json.prod",
+      "GoogleService-Info.plist.prod"
+    ],
+    "secretScanAllow": []
+  }
+}

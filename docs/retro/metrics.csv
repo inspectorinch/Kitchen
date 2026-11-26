@@ -1,0 +1,1 @@
+date,mode,stage,width,items_merged,first_pass_pass_rate,avg_rounds,reverts,merge_conflicts,tokens_total,tokens_per_item,cost_units_per_item,main_session_share,agent_calls,mode_backoffs,gate_item_fail_rate,gate_batch_failures,gate_escapes,bugs_filed,bugs_fixed,hook_blocks,owner_blocks
