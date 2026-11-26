@@ -19,3 +19,6 @@ ios/App/Pods/
 *.p12
 *.mobileprovision
 service-account*.json
+
+# The owner's own receipts and kitchen photos for the bake-off: never committed (this repo is public)
+evals/private/

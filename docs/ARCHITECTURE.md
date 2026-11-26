@@ -47,10 +47,14 @@ docs/
 | Store cart | `functions/src/adapters/instacart` | Fake that returns a link | Instacart Developer Platform |
 | Order email in | `functions/src/adapters/mail-intake` | Sample order emails posted locally | Inbound-mail service (forwarding address) |
 | Gmail connect | `functions/src/adapters/gmail` | Fake inbox | Gmail API, off until Google approves |
-| Online recipes | `functions/src/adapters/recipe-search` | Fixed result set | Chosen by the researcher |
-| Barcode lookup | `src/platform/barcode` + product lookup | Fixed product table | Chosen by the researcher |
-| Subscriptions | `src/platform/purchases` + backend check | Fake "is Plus" switch | Store subscriptions (sandbox first) |
-| Camera, push, share | `src/platform/*` | Browser file picker, logged notifications | Capacitor plugins |
+| Online recipes | `functions/src/adapters/recipe-search` | Fixed result set | Spoonacular (only id, title and image URL stored; results cached one hour) |
+| Barcode lookup | `src/platform/barcode` + product lookup | Fixed product table | Open Food Facts, called from the phone; unknown codes fall back to manual |
+| Subscriptions | `src/platform/purchases` + backend webhook | Fake "is Plus" switch | RevenueCat over the two stores (sandbox first) |
+| Sign-in | `src/platform/auth` | Auth emulator | Firebase Auth with native Google and Apple sign-in |
+| Camera, share, in-app browser, keep-awake | `src/platform/*` | Browser file picker and plain links | Capacitor plugins |
+| Push | `src/platform/push` + `functions/src/notifications` | Logged locally | Firebase Cloud Messaging on both platforms |
+
+The plugin and version for each row is in `docs/research/capacitor-plugins.md` and `docs/research/app-stack.md`. The gateway is exposed as callable functions, because App Check enforcement covers callables only.
 
 The implementation is chosen in one place from config and defaults to the stand-in when the real value is missing.
 

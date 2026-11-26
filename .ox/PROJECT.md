@@ -33,7 +33,7 @@ phone-app · worktrees: yes · a fresh worktree runs `npm ci --prefer-offline` f
 None. Every agent applies.
 
 ## Allowed targets
-Free use: the Firebase emulators with `--project demo-kitchen`. Once the owner creates it: the dev Firebase project, deploys only with `--project <dev id>`. Paid AI and receipt services: only the bake-off in `evals/` when the owner starts it, and the gateway in dev. Test builds: Play internal testing and TestFlight, at check-ins only. Nothing else.
+Free use: the Firebase emulators with `--project demo-kitchen`. Once the owner creates it: the dev Firebase project, deploys only with `--project <dev id>`. Paid AI and receipt services: only the bake-off in `evals/` when the owner starts it, and the gateway in dev. Test builds: Play internal and closed testing, and TestFlight, at check-ins only. Nothing else.
 
 ## Owner
 inspectorinch

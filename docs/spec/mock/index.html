@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kitchen: first look (mock)</title>
+<style>
+:root{--page:#e9e4da;--bg:#fbf6ec;--card:#fff;--ink:#3a2f28;--mute:#857a70;--line:#e8dfd0;--accent:#e2703a;--accentink:#fff;--good:#4f9d69;--warn:#d9a21b;--bad:#cf4b45;--wall:#f6d9a8;--floor:#b98a5e;--fridge:#dfeaf0;--fridge2:#c3d4de;--freezer:#cfe0e8;--pant:#a9704a;--pant2:#8b5a3a;--shelf:#c9b79a;--chip:#f3ece0;--toast:#3a2f28;--toastink:#fff}
+[data-theme=dark]{--page:#14110f;--bg:#211c18;--card:#2d2620;--ink:#f1e8da;--mute:#a79b8d;--line:#3d342c;--accent:#f08a54;--accentink:#241608;--good:#6fc08a;--warn:#e8b83c;--bad:#ee7069;--wall:#4a3b2c;--floor:#2f241b;--fridge:#6c818d;--fridge2:#566a76;--freezer:#5e7480;--pant:#7a4d33;--pant2:#5f3b27;--shelf:#6b5a46;--chip:#382f27;--toast:#f1e8da;--toastink:#211c18}
+*{box-sizing:border-box;margin:0}
+body{background:var(--page);font:15px/1.35 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:14px 0 30px;gap:12px}
+.themebar{display:flex;gap:10px;align-items:center;color:var(--ink);font-size:14px}
+.themebar button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:20px;padding:6px 14px;cursor:pointer;font:inherit}
+.phone{width:390px;height:844px;background:var(--bg);border-radius:44px;border:8px solid #111;position:relative;overflow:hidden;display:flex;flex-direction:column;flex:none;box-shadow:0 12px 40px #0004}
+.status{height:30px;flex:none;display:flex;justify-content:space-between;padding:10px 24px 0;font-size:12px;color:var(--mute)}
+.screen{display:none;flex:1;min-height:0;flex-direction:column}
+.screen.on{display:flex}
+.top{padding:6px 16px 10px;flex:none}
+.top h1{font-size:22px}
+.top .sub{color:var(--mute);font-size:13px}
+.body{flex:1;overflow-y:auto;padding:0 16px 16px;min-height:0}
+.row{display:flex;align-items:center;gap:8px}
+.between{justify-content:space-between}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{background:var(--accent);color:var(--accentink);border:0;border-radius:14px;padding:12px 16px;font-weight:600;width:100%}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.back{border:0;background:none;color:var(--accent);font-weight:600;padding:0 0 4px;text-align:left}
+input,select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:14px 0 8px}
+.tabs{height:64px;flex:none;display:flex;background:var(--card);border-top:1px solid var(--line)}
+.tabs button{flex:1;border:0;background:none;color:var(--mute);font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.tabs button i{width:22px;height:22px;border-radius:7px;background:var(--line)}
+.tabs button.on{color:var(--accent);font-weight:700}.tabs button.on i{background:var(--accent)}
+/* kitchen */
+.search{display:flex;gap:8px;align-items:center}
+.search input{flex:1}
+.sw{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mute);white-space:nowrap}
+.sw b{width:38px;height:22px;border-radius:12px;background:var(--line);position:relative;display:block}
+.sw b:after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--card);transition:.2s}
+.sw.on b{background:var(--accent)}.sw.on b:after{left:19px}
+.scene{position:relative;height:400px;border-radius:20px;overflow:hidden;background:var(--wall);border:1px solid var(--line)}
+.floor{position:absolute;left:0;right:0;bottom:0;height:80px;background:var(--floor)}
+.win{position:absolute;left:150px;top:16px;width:80px;height:70px;background:#9fd0e6;border:6px solid var(--shelf);border-radius:6px}
+[data-theme=dark] .win{background:#2b3e55}
+.unit{position:absolute;border:0;border-radius:10px 10px 4px 4px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:10px;font-weight:700;font-size:13px;color:var(--ink);box-shadow:inset 0 -6px 0 #0002}
+.unit:active{transform:scale(.98)}
+.fr{left:10px;bottom:80px;width:100px;height:250px;background:var(--fridge)}
+.fr:before{content:"";position:absolute;left:0;right:0;top:78px;height:3px;background:var(--fridge2)}
+.fr:after{content:"";position:absolute;right:10px;top:24px;width:6px;height:36px;border-radius:3px;background:var(--fridge2)}
+.fz{left:120px;bottom:80px;width:100px;height:70px;background:var(--freezer);border-radius:12px 12px 4px 4px}
+.fz:after{content:"";position:absolute;left:30px;right:30px;top:10px;height:6px;border-radius:3px;background:var(--fridge2)}
+.pa{right:10px;bottom:80px;width:100px;height:270px;background:var(--pant);color:#fff}
+.pa:before{content:"";position:absolute;left:50%;top:0;bottom:0;width:3px;background:var(--pant2)}
+.pa:after{content:"";position:absolute;left:12px;right:12px;top:130px;height:3px;background:var(--pant2)}
+.pa span,.fr span,.fz span{background:#0003;border-radius:8px;padding:2px 8px;position:relative;z-index:1}
+.fr span,.fz span{color:var(--ink);background:#fff6}
+.spice{position:absolute;left:120px;top:170px;width:100px;border:0;background:none;height:56px;padding:0}
+.spice .pl{position:absolute;left:0;right:0;bottom:20px;height:6px;background:var(--shelf);border-radius:3px}
+.spice .jar{position:absolute;bottom:26px;width:14px;border-radius:3px 3px 1px 1px}
+.spice small{position:absolute;left:0;right:0;bottom:0;font-size:11px;font-weight:700;color:var(--ink)}
+.counter{position:absolute;left:0;right:0;bottom:80px;height:0}
+.fab{position:absolute;right:30px;bottom:14px;width:54px;height:54px;border-radius:50%;border:0;background:var(--accent);color:var(--accentink);font-size:30px;line-height:1;box-shadow:0 4px 10px #0004;z-index:5}
+.hint{color:var(--mute);font-size:13px;margin-top:8px;text-align:center}
+.tl{display:none}.tl.on{display:block}
+.li{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.li:last-child{border:0}.li .n{flex:1;min-width:0}.li small{color:var(--mute);display:block}
+/* fridge */
+.fwrap{position:relative;perspective:900px;flex:1;min-height:0}
+.inside{position:absolute;inset:0 0 0 46px;background:var(--fridge);border-radius:18px;padding:10px;overflow-y:auto;border:6px solid var(--fridge2)}
+.shelf{border-bottom:6px solid var(--shelf);padding:6px 0 10px;margin-bottom:8px;display:flex;flex-direction:column;gap:8px}
+.door{position:absolute;inset:0;background:var(--fridge);border:6px solid var(--fridge2);border-radius:18px;left:0;right:auto;width:46px;z-index:2;pointer-events:none;display:flex;align-items:center;justify-content:center;padding:0;overflow:hidden}
+.door:after{content:"";flex:none;width:8px;height:70px;border-radius:4px;background:var(--fridge2)}
+.opening .door{animation:swing .9s ease-in-out}
+@keyframes swing{0%{width:100%}100%{width:46px}}
+.chip{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 6px 6px 6px;width:100%}
+.chip.exp{border-color:var(--warn);border-width:2px}
+.ico{width:30px;height:30px;border-radius:9px;flex:none;color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+.chip .t{flex:1;min-width:0;line-height:1.15}
+.chip .t b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip .t small{font-size:11px;color:var(--mute)}
+.chip .t small.low{color:var(--bad);font-weight:700}.chip .t small.exp{color:var(--warn);font-weight:700}
+.x{width:26px;height:26px;border-radius:50%;border:0;background:var(--chip);color:var(--mute);font-size:16px;line-height:1;flex:none}
+.c1{background:#5b9bd5}.c2{background:#4f9d69}.c3{background:#e2a03a}.c4{background:#c9604f}.c5{background:#9a6fb0}
+/* add */
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px}
+.opt .ico{width:40px;height:40px;border-radius:12px}
+.opt b{display:block}.opt small{color:var(--mute)}
+.pill{display:inline-block;background:var(--chip);border-radius:20px;padding:4px 12px;font-size:13px}
+.flag{background:#d9a21b22;border:1px solid var(--warn);border-radius:14px;padding:8px;margin-bottom:8px}
+.rv{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.rv input[type=text]{flex:1}
+.rv input[type=checkbox],.li input[type=checkbox]{width:22px;height:22px;accent-color:var(--accent);flex:none}
+.tag{font-size:11px;font-weight:700;color:var(--warn);white-space:nowrap}
+.foot{padding:10px 16px;border-top:1px solid var(--line);flex:none}
+/* recipes */
+.rc{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px;margin-bottom:8px}
+.rc .pic{width:54px;height:54px;border-radius:12px;flex:none}
+.rc div{min-width:0}.rc b{display:block}.rc small{color:var(--mute)}
+.use{color:var(--warn);font-weight:700}
+.ask{display:flex;gap:8px;margin-top:8px}.ask select{flex:1}
+.have{color:var(--good);font-weight:800;width:20px;flex:none}.miss{color:var(--bad);font-weight:800;width:20px;flex:none}
+.swap{background:var(--chip);border-radius:10px;padding:6px 10px;font-size:13px;margin:2px 0 6px 28px}
+ol{padding-left:20px}ol li{margin-bottom:8px}
+/* sheets */
+.scrim{position:absolute;inset:0;background:#0007;display:none;align-items:flex-end;z-index:20}
+.scrim.on{display:flex}
+.sheet{background:var(--bg);width:100%;border-radius:24px 24px 0 0;padding:18px 16px 22px;max-height:90%;overflow-y:auto}
+.sheet h3{font-size:19px;margin-bottom:4px}
+.seg{display:flex;gap:4px}
+.seg label{flex:1}
+.seg input{display:none}
+.seg span{display:block;text-align:center;font-size:11px;padding:6px 2px;border-radius:10px;background:var(--chip);color:var(--mute);cursor:pointer}
+.seg input:checked+span{background:var(--accent);color:var(--accentink);font-weight:700}
+.toast{position:absolute;left:16px;right:16px;bottom:76px;background:var(--toast);color:var(--toastink);border-radius:14px;padding:10px 14px;display:none;align-items:center;justify-content:space-between;z-index:30;font-size:14px}
+.toast.on{display:flex}
+.toast button{border:0;background:none;color:var(--accent);font-weight:800;padding:0 0 0 12px}
+[data-theme=dark] .toast button{color:#c4561f}
+.plus{background:var(--accent);color:var(--accentink);border-radius:16px;padding:14px;margin-bottom:10px}
+.plus ul{padding-left:18px;margin:6px 0 0}
+</style></head>
+<body data-theme="light" id="b">
+<div class="themebar"><span>Kitchen: first look (mock, placeholder art)</span><button id="tg" onclick="theme()">Switch to dark</button></div>
+
+<div class="phone" id="phone">
+<div class="status"><span>9:41</span><span>Kitchen</span></div>
+
+<!-- 1 KITCHEN -->
+<section class="screen on" id="kitchen">
+ <div class="top">
+  <div class="search"><input placeholder="Search your kitchen" style="flex:1" aria-label="Search"><button class="sw" id="lv" onclick="lview()" style="border:0;background:none"><span>List view</span><b></b></button></div>
+ </div>
+ <div class="body">
+  <div id="room">
+  <div class="scene">
+   <div class="win"></div>
+   <button class="unit fr" onclick="openFridge()"><span>Fridge</span></button>
+   <button class="unit fz" onclick="toast('Freezer: 9 items (mock)')"><span>Freezer</span></button>
+   <button class="spice" onclick="toast('Spice rack: 14 items (mock)')"><i class="jar" style="left:6px;height:18px;background:#c9604f"></i><i class="jar" style="left:26px;height:24px;background:#e2a03a"></i><i class="jar" style="left:46px;height:16px;background:#4f9d69"></i><i class="jar" style="left:66px;height:22px;background:#9a6fb0"></i><i class="pl"></i><small>Spice rack</small></button>
+   <button class="unit pa" onclick="toast('Pantry: 23 items (mock)')"><span>Pantry</span></button>
+   <div class="floor"></div>
+   <button class="fab" onclick="go('add')" aria-label="Add">+</button>
+  </div>
+  <p class="hint">Tap the fridge to look inside.</p>
+  <div class="card" style="margin-top:10px"><b>Spinach</b> expires tomorrow. <a href="#" onclick="go('recipes');return false" style="color:var(--accent);font-weight:700">Use it up</a></div>
+  </div>
+  <div class="tl" id="plain">
+   <h2>Fridge</h2><div class="li"><div class="n">Milk<small>low</small></div></div><div class="li"><div class="n">Spinach<small>expires tomorrow</small></div></div><div class="li"><div class="n">Eggs<small>plenty</small></div></div>
+   <h2>Freezer</h2><div class="li"><div class="n">Peas<small>plenty</small></div></div><div class="li"><div class="n">Chicken thighs<small>plenty</small></div></div>
+   <h2>Pantry</h2><div class="li"><div class="n">Pasta<small>plenty</small></div></div><div class="li"><div class="n">Rice<small>low</small></div></div>
+   <h2>Spice rack</h2><div class="li"><div class="n">Paprika<small>plenty</small></div></div>
+  </div>
+ </div>
+</section>
+
+<!-- 2 FRIDGE -->
+<section class="screen" id="fridge">
+ <div class="top"><button class="back" onclick="go('kitchen')">‹ Kitchen</button><h1>Fridge</h1><div class="sub">Tap × when something is gone.</div></div>
+ <div class="body" style="display:flex;flex-direction:column">
+  <div class="fwrap" id="fw">
+   <div class="inside">
+    <div class="shelf">
+     <div class="chip" id="i1"><span class="ico c1">M</span><span class="t"><b>Milk</b><small class="low">Low</small></span><button class="x" onclick="rm('i1','Milk')" aria-label="Remove Milk">×</button></div>
+     <div class="chip" id="i2"><span class="ico c3">Y</span><span class="t"><b>Yogurt</b><small>Plenty</small></span><button class="x" onclick="rm('i2','Yogurt')" aria-label="Remove Yogurt">×</button></div>
+     <div class="chip" id="i5"><span class="ico c4">E</span><span class="t"><b>Eggs</b><small>Plenty</small></span><button class="x" onclick="rm('i5','Eggs')" aria-label="Remove Eggs">×</button></div>
+    </div>
+    <div class="shelf">
+     <div class="chip exp" id="i3"><span class="ico c2">S</span><span class="t"><b>Spinach</b><small class="exp">Expires tomorrow</small></span><button class="x" onclick="rm('i3','Spinach')" aria-label="Remove Spinach">×</button></div>
+     <div class="chip" id="i4"><span class="ico c2">C</span><span class="t"><b>Carrots</b><small>Plenty</small></span><button class="x" onclick="rm('i4','Carrots')" aria-label="Remove Carrots">×</button></div>
+     <div class="chip" id="i6"><span class="ico c3">Ch</span><span class="t"><b>Cheddar</b><small>Plenty</small></span><button class="x" onclick="rm('i6','Cheddar')" aria-label="Remove Cheddar">×</button></div>
+    </div>
+    <div class="shelf">
+     <div class="chip" id="i7"><span class="ico c5">J</span><span class="t"><b>Orange juice</b><small>Plenty</small></span><button class="x" onclick="rm('i7','Orange juice')" aria-label="Remove Orange juice">×</button></div>
+     <div class="chip" id="i8"><span class="ico c1">R</span><span class="t"><b>Leftover rice</b><small>Plenty</small></span><button class="x" onclick="rm('i8','Leftover rice')" aria-label="Remove Leftover rice">×</button></div>
+    </div>
+   </div>
+   <div class="door"></div>
+  </div>
+ </div>
+</section>
+
+<!-- 3 ADD -->
+<section class="screen" id="add">
+ <div class="top"><button class="back" onclick="go('kitchen')">‹ Back</button><h1>Add to your kitchen</h1><div class="sub"><span class="pill">7 of 10 free scans left this month</span></div></div>
+ <div class="body">
+  <button class="opt" onclick="go('review')"><span class="ico c1">P</span><span><b>Photo</b><small>A shelf, groceries or one item</small></span></button>
+  <button class="opt" onclick="go('review')"><span class="ico c3">R</span><span><b>Receipt</b><small>Snap your paper receipt</small></span></button>
+  <button class="opt" onclick="toast('Barcode added: Oat milk (mock)')"><span class="ico c2">B</span><span><b>Barcode</b><small>Always free</small></span></button>
+  <button class="opt" onclick="toast('Type it: name, amount, expiry (mock)')"><span class="ico c5">T</span><span><b>Type it</b><small>Always free</small></span></button>
+  <p class="hint"><a href="#" onclick="sheet('limit',1);return false" style="color:var(--accent)">Preview: what you see at the limit</a></p>
+ </div>
+</section>
+
+<!-- 3b REVIEW -->
+<section class="screen" id="review">
+ <div class="top"><button class="back" onclick="go('add')">‹ Back</button><h1>Check what we found</h1><div class="sub">Fix names, untick anything wrong.</div></div>
+ <div class="body">
+  <h2>Not sure about these</h2>
+  <div class="flag">
+   <div class="rv"><input type="checkbox" checked aria-label="Keep"><input type="text" value="Cilantro?"><span class="tag">Unsure</span></div>
+   <div class="rv" style="margin:0"><input type="checkbox" checked aria-label="Keep"><input type="text" value="Greek yogurt?"><span class="tag">Unsure</span></div>
+  </div>
+  <h2>Looks right</h2>
+  <div class="rv"><input type="checkbox" checked><input type="text" value="Milk"><span class="pill">Fridge</span></div>
+  <div class="rv"><input type="checkbox" checked><input type="text" value="Bananas"><span class="pill">Pantry</span></div>
+  <div class="rv"><input type="checkbox" checked><input type="text" value="Pasta"><span class="pill">Pantry</span></div>
+  <div class="rv"><input type="checkbox"><input type="text" value="Paper towels"><span class="pill">Pantry</span></div>
+  <p class="hint">Milk is already here, so we add to it. Everything starts as plenty.</p>
+ </div>
+ <div class="foot"><button class="btn" onclick="go('kitchen');toast('Saved 5 items')">Save 5 items</button></div>
+</section>
+
+<!-- 4 RECIPES -->
+<section class="screen" id="recipes">
+ <div class="top"><h1>What can I make?</h1></div>
+ <div class="body">
+  <div class="card">
+   <input placeholder="Ask for a recipe, like chicken parmesan" style="width:100%">
+   <div class="ask"><select aria-label="Servings"><option>4 servings</option><option>2 servings</option></select><select aria-label="Time"><option>30 min</option><option>15 min</option><option>1 hour</option></select></div>
+   <button class="btn" style="margin-top:8px" onclick="go('recipe')">Find a recipe</button>
+  </div>
+  <h2>You have everything</h2>
+  <button class="rc" onclick="go('recipe')"><i class="pic c2"></i><div><b>Spinach and cheese omelet</b><small>15 min</small><br><small class="use">uses your spinach (expires tomorrow)</small></div></button>
+  <button class="rc" onclick="go('recipe')"><i class="pic c3"></i><div><b>Fried rice</b><small>20 min</small></div></button>
+  <h2>Missing up to 3</h2>
+  <button class="rc" onclick="go('recipe')"><i class="pic c4"></i><div><b>Chicken parmesan</b><small>Missing 2: breadcrumbs, mozzarella</small></div></button>
+  <button class="rc" onclick="go('recipe')"><i class="pic c5"></i><div><b>Veggie pasta bake</b><small>Missing 3 things</small></div></button>
+ </div>
+</section>
+
+<!-- 5 RECIPE -->
+<section class="screen" id="recipe">
+ <div class="top"><button class="back" onclick="go('recipes')">‹ Recipes</button><h1>Spinach and cheese omelet</h1><div class="sub">2 servings · 15 min · <span class="use">uses your spinach</span></div></div>
+ <div class="body">
+  <h2>Ingredients</h2>
+  <div class="li"><span class="have">✓</span><span class="n">4 eggs</span></div>
+  <div class="li"><span class="have">✓</span><span class="n">2 cups spinach</span></div>
+  <div class="li"><span class="have">✓</span><span class="n">Cheddar, a handful</span></div>
+  <div class="li" style="border:0;padding-bottom:0"><span class="miss">✗</span><span class="n">Feta, 50 g<small>Missing</small></span></div>
+  <div class="swap">Swap: use your cheddar instead.</div>
+  <h2>Steps</h2>
+  <ol><li>Whisk the eggs with a pinch of salt.</li><li>Wilt the spinach in a hot pan.</li><li>Pour in the eggs, add cheese, fold and serve.</li></ol>
+ </div>
+ <div class="foot"><div class="row"><button class="btn ghost" onclick="go('list');">Add missing to list</button><button class="btn" onclick="sheet('cooked',1)">I cooked this</button></div></div>
+</section>
+
+<!-- 6 LIST -->
+<section class="screen" id="list">
+ <div class="top"><h1>Shopping list</h1><div class="sub">Made just now from your kitchen</div></div>
+ <div class="body">
+  <h2>Ran out</h2>
+  <div class="li"><input type="checkbox" checked><span class="n">Milk</span></div>
+  <div class="li"><input type="checkbox" checked><span class="n">Butter</span></div>
+  <h2>Running low (suggestions)</h2>
+  <div class="li"><input type="checkbox"><span class="n">Rice</span></div>
+  <div class="li"><input type="checkbox"><span class="n">Yogurt</span></div>
+  <h2>For Chicken parmesan</h2>
+  <div class="li"><input type="checkbox" checked><span class="n">Breadcrumbs</span></div>
+  <div class="li"><input type="checkbox" checked><span class="n">Mozzarella</span></div>
+  <h2>Add your own</h2>
+  <div class="row"><input placeholder="Add an item" style="flex:1"><button class="btn" style="width:auto" onclick="toast('Added (mock)')">Add</button></div>
+ </div>
+ <div class="foot"><button class="btn" onclick="toast('Opening Instacart (mock)')">Send to Instacart</button></div>
+</section>
+
+<!-- SETTINGS -->
+<section class="screen" id="settings">
+ <div class="top"><h1>Settings</h1></div>
+ <div class="body">
+  <div class="plus"><b>Kitchen Plus</b><ul><li>More scans and recipes</li><li>Whole family can join</li><li>Auto-update from Instacart</li></ul><button class="btn" style="margin-top:10px;background:var(--card);color:var(--ink)" onclick="sheet('limit',1)">See Plus</button></div>
+  <div class="card li" style="border:1px solid var(--line)"><span class="n">Family<small>2 people</small></span>›</div>
+  <div class="card li" style="border:1px solid var(--line)"><span class="n">Diet and allergies<small>None set</small></span>›</div>
+  <div class="card li" style="border:1px solid var(--line)"><span class="n">Daily expiry reminder<small>8:00 am</small></span>›</div>
+ </div>
+</section>
+
+<nav class="tabs" id="tabs">
+ <button data-t="kitchen" class="on" onclick="go('kitchen')"><i></i>Kitchen</button>
+ <button data-t="recipes" onclick="go('recipes')"><i></i>Recipes</button>
+ <button data-t="list" onclick="go('list')"><i></i>List</button>
+ <button data-t="settings" onclick="go('settings')"><i></i>Settings</button>
+</nav>
+
+<div class="toast" id="toast"><span id="tm"></span><button id="tu" onclick="undo()">Undo</button></div>
+
+<!-- SHEETS -->
+<div class="scrim" id="cooked" onclick="if(event.target==this)sheet('cooked',0)"><div class="sheet">
+ <h3>What did you use?</h3><div class="sub" style="color:var(--mute);font-size:13px;margin-bottom:10px">We made a guess. Change anything.</div>
+ <div class="li"><span class="n">Eggs</span><div class="seg" style="width:210px"><label><input type="radio" name="a" checked><span>Plenty</span></label><label><input type="radio" name="a"><span>Low</span></label><label><input type="radio" name="a"><span>Used up</span></label></div></div>
+ <div class="li"><span class="n">Spinach</span><div class="seg" style="width:210px"><label><input type="radio" name="b"><span>Plenty</span></label><label><input type="radio" name="b"><span>Low</span></label><label><input type="radio" name="b" checked><span>Used up</span></label></div></div>
+ <div class="li"><span class="n">Cheddar</span><div class="seg" style="width:210px"><label><input type="radio" name="c"><span>Plenty</span></label><label><input type="radio" name="c" checked><span>Low</span></label><label><input type="radio" name="c"><span>Used up</span></label></div></div>
+ <button class="btn" style="margin-top:12px" onclick="sheet('cooked',0);go('kitchen');toast('Kitchen updated')">Done</button>
+</div></div>
+
+<div class="scrim" id="limit" onclick="if(event.target==this)sheet('limit',0)"><div class="sheet">
+ <h3>You've used your free scans</h3><div style="color:var(--mute);margin-bottom:10px">They come back next month. Barcode and typing still work.</div>
+ <div class="plus"><b>Kitchen Plus</b><ul><li>Lots more photo and receipt scans</li><li>More AI recipes</li><li>Whole family can join</li></ul></div>
+ <button class="btn" onclick="sheet('limit',0);toast('Plus sign-up (mock)')">Get Plus</button>
+ <button class="btn ghost" style="margin-top:8px" onclick="sheet('limit',0)">Not now</button>
+</div></div>
+</div>
+
+<script>
+var T,last;
+function go(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.toggle('on',s.id==id)});
+ var m={kitchen:'kitchen',fridge:'kitchen',add:'kitchen',review:'kitchen',recipes:'recipes',recipe:'recipes',list:'list',settings:'settings'}[id];
+ document.querySelectorAll('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.t==m)});
+ document.getElementById('toast').classList.remove('on')}
+function openFridge(){go('fridge');var f=document.getElementById('fw');f.classList.remove('opening');void f.offsetWidth;f.classList.add('opening')}
+function theme(){var b=document.getElementById('b'),d=b.dataset.theme=='dark';b.dataset.theme=d?'light':'dark';document.getElementById('tg').textContent=d?'Switch to dark':'Switch to light'}
+function toast(m,u){document.getElementById('tm').textContent=m;document.getElementById('tu').style.display=u?'':'none';document.getElementById('toast').classList.add('on');clearTimeout(T);T=setTimeout(function(){document.getElementById('toast').classList.remove('on')},4000)}
+function rm(id,n){last=id;document.getElementById(id).style.display='none';toast(n+' removed',1)}
+function undo(){if(last)document.getElementById(last).style.display='';last=null;document.getElementById('toast').classList.remove('on')}
+function sheet(id,on){document.getElementById(id).classList.toggle('on',!!on)}
+function lview(){var on=document.getElementById('lv').classList.toggle('on');document.getElementById('room').style.display=on?'none':'';document.getElementById('plain').classList.toggle('on',on)}
+</script>
+</body></html>

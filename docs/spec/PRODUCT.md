@@ -56,7 +56,7 @@ Each area gets a feature spec with acceptance criteria in `docs/spec/features/`.
 
 ## Not in the first release
 Version 2.0 (these are the scope guards): nutrition and calorie tracking; price or budget tracking; a meal-planning calendar beyond the weekly Plus suggestions; voice input; tablet layouts; a web version; stores other than Instacart (the store adapter leaves room); languages other than English; regions outside the US.
-Never: ads; keeping users' photos after they are read; selling or sharing users' data.
+Never: ads; keeping users' photos on our servers after they are read; selling users' data; sending real photos through any AI tier that trains on them.
 
 ## Look and feel
 - A cozy cartoon cutaway kitchen in flat colors. Tap the fridge and its door swings open. Light and dark themes.
@@ -67,7 +67,7 @@ Never: ads; keeping users' photos after they are read; selling or sharing users'
 
 ## Money, accounts and data
 - Free with limits; Plus is a subscription through Google Play and the App Store. Price and exact allowances are set after the bake-off measures the real cost per scan; both are server settings, changeable without an app update.
-- An account is required. Stored: sign-in identity, the kitchen's items, places, settings, recipes saved, lists, usage counts. Photos are sent for reading and then deleted. Order emails: only Instacart order emails are read; only the items are kept.
+- An account is required. Stored: sign-in identity, the kitchen's items, places, settings, recipes saved, lists, usage counts. Photos are sent for reading and then deleted from our servers; the AI vendor may keep a copy in its abuse logs for a limited time, and the privacy policy says "deleted promptly", not "never stored". Users are asked for consent before their first photo is sent (the App Store requires it). Order emails: only Instacart order emails are read; only the items are kept.
 - Gmail connect asks for permission to read mail, which Google restricts: it needs Google's verification and a yearly outside security assessment (paid; an owner-only step). Until that passes it stays off for the public and the forwarding address is the way in.
 - Legal weight: privacy policy and terms before any public build; account deletion in the app (both stores require it); no accounts for children under 13.
 
@@ -107,3 +107,16 @@ Never: ads; keeping users' photos after they are read; selling or sharing users'
 9. **Age.** Reading: 13 and over; no child accounts.
 10. **Who can do what in a family.** Reading: everyone adds and removes; only the creator invites, removes members, manages Plus and deletes the kitchen.
 11. **iOS builds without a Mac.** Reading: built in a cloud CI service and checked through TestFlight on the owner's iPhone.
+
+### Raised by the research and the feature specs (25 Nov 2026)
+The full list is in `docs/spec/OPEN-QUESTIONS.md`; these are the ones with money, deletion or privacy in them.
+12. **Receipts: service first, or AI alone?** Research: a dedicated receipt service costs about 1 cent a page, roughly ten times a low-cost AI read. Decision 21 already says "unless cost-prohibitive". Reading: build both paths behind one setting; the bake-off scores AI alone, the service alone, and the service then AI; the owner picks from the results.
+13. **The creator deletes their account.** Reading: the shared kitchen is deleted for everyone and each member gets a fresh empty one. There is no handing a kitchen to another member in the first release.
+14. **Gmail's forwarding confirmation.** Gmail sends a code to the kitchen's address when auto-forwarding is set up. Reading: the app shows that one email's code and keeps nothing else: a narrow exception to "mail that isn't an Instacart order is never stored".
+15. **The walk-through's two scans.** Reading: they count against the free allowance.
+16. **Allergies and online recipes.** An AI recipe is checked against the kitchen's allergies and refused if it fails. An online recipe can only be filtered at search time. Reading: online results always carry a "check the ingredients" line.
+17. **Online recipes are stored thinly.** The recipe source's terms allow storing only an id, a title and an image link, and caching results for an hour. Reading: favorites of online recipes hold just those and open the source's page.
+18. **Costs only the owner can accept.** Firebase's paid plan (Functions and Storage need it), the Apple Developer Program, a Google Play account, the recipe source's paid plan before launch, an inbound-mail service and domain, the subscription service's cut above its free tier, and the yearly security assessment if Gmail connect goes public. Reading: none is bought by Claude; each is an owner step with a guide; everything is built against stand-ins meanwhile.
+19. **Google Play's closed test.** A new personal developer account must run a closed test with at least 12 testers for 14 days before publishing. Reading: recruiting testers is on the owner track from the start.
+20. **Instacart can refuse the key.** Reading: the list's copy and share always work, so the app is whole without it; the Instacart button appears only when a key is present.
+21. **This repo is public.** Reading: the owner's test photos and receipts are never committed; they stay on the owner's computer, and only scores are committed.
