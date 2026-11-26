@@ -8,14 +8,14 @@ Keep the kitchen up to date without typing: when an Instacart order is placed, i
 
 Two ways in, both behind one intake path:
 1. A private forwarding address per kitchen, with in-app setup instructions. Available at launch.
-2. Gmail connect. Built in the first release but hidden behind a server flag until Google approves it.
+2. Gmail connect. Built in the first release but hidden behind a server flag until Google approves it. Until then Google lets it serve only a capped list of test users (up to 100, listed by the owner) whose access expires every week, so the flag stays off for the public (docs/research/order-email-intake.md).
 
 Instacart is the only store. The code leaves room for other stores (scope guard: other stores are 2.0).
 
 ## Who gets what
-- Plus kitchens: both ways in (Gmail connect only while the server flag is on).
+- Plus kitchens: both ways in (Gmail connect only while the server flag is on; before Google approves it, only for the owner's listed test users).
 - Free kitchens: no auto-update. They see what Plus adds (the Orders screen shows the upsell). Mail sent to a free kitchen's address is dropped.
-- Everyone in the kitchen can see the setup instructions and the address, and review imports. Only the kitchen's creator regenerates the address, connects or disconnects Gmail (PRODUCT.md open question 10 reading: creator manages Plus and integrations).
+- Everyone in the kitchen can see the setup instructions and the address, and review imports. Only the kitchen's creator regenerates the address, connects or disconnects Gmail (PRODUCT.md open question 10 reading: creator manages Plus and integrations; settled at reconcile).
 - Offline: the Orders screen shows the last known state; connecting Gmail and regenerating need a connection. Pending imports already synced can be reviewed offline per `adding`.
 - Signed out: nothing; sign-in is required.
 - Ages: 13 and over, no change.
@@ -24,7 +24,7 @@ Instacart is the only store. The code leaves room for other stores (scope guard:
 No golden screenshots exist (idea-first project). Screens are reached from Settings, row "Instacart orders" (placement is an open question).
 1. **Orders screen (Plus, forwarding)**: shows the kitchen's forwarding address with a Copy button, three-step setup instructions (see Copy), and a state line: "Waiting for your first order" or "Last order imported: <date>". A "Make a new address" action (creator only) with a confirm sheet.
 2. **Orders screen (free)**: short explanation and a "See Plus" button. No address shown.
-3. **Gmail connect section** (only when the server flag is on and the kitchen is Plus): states: not connected (button "Connect Gmail" with a plain explanation of what is read), connecting, connected (account email shown, "Disconnect"), error (permission refused or expired; "Reconnect"). When the flag is off the section is absent from the screen entirely, not greyed out.
+3. **Gmail connect section** (only when the server flag is on and the kitchen is Plus): states: not connected (button "Connect Gmail" with a plain explanation of what is read), connecting, connected (account email shown, "Disconnect"), error (permission refused, or the weekly test-mode access expired; "Reconnect"). When the flag is off the section is absent from the screen entirely, not greyed out.
 4. **Forwarding confirmation hint**: while setting up, if Google's forwarding-confirmation message arrives, the code is shown on the Orders screen (see AC-orders-9).
 5. **Notification**: "your Instacart order is ready to review"; tapping it opens the review list for that import.
 6. **Loading, error, offline** for the Orders screen: skeleton while loading; "Couldn't load. Try again." on error; offline banner and the Copy button still works.
@@ -40,8 +40,8 @@ No golden screenshots exist (idea-first project). Screens are reached from Setti
 8. A "ready to review" notification is sent once per new pending import, to every member who has this notification on (notification 2 of the three in owner decision 19). Replacing a pending import does not send a second notification.
 9. Plan is checked at the moment mail arrives. A free kitchen's mail is dropped: nothing stored, no import, no notification, no reply. If the kitchen later becomes Plus, earlier mail is not retroactively imported.
 10. Mail to an address that belongs to no kitchen is dropped: nothing stored, no reply (no bounce), and only an anonymous counter is incremented.
-11. Gmail connect asks for read-only access. The server only searches for messages that match the Instacart sender, so other messages are never opened. Only mail received after connecting is considered. Disconnect is available at any time: it revokes the token with Google, deletes the stored token, stops reading, and keeps items already imported.
-12. The Gmail connect option is controlled by a server flag (name `gmailConnectEnabled`, default off). It is changed without an app update. With the flag off, the app hides the section and the backend refuses connect calls. If the flag is turned off after a kitchen connected, reading pauses until it is turned on again; tokens are kept (open question 7).
+11. Gmail connect asks for read-only access (Google's `gmail.readonly`, a restricted permission). Google has no narrower permission that reads one sender only, so the limit to Instacart is our own search filter, not something Google enforces, and the consent text says so honestly. The server only searches for messages that match the Instacart sender, so other messages are never opened. Only mail received after connecting is considered. Disconnect is available at any time: it revokes the token with Google, deletes the stored token, stops reading, and keeps items already imported.
+12. The Gmail connect option is controlled by a server flag (name `gmailConnectEnabled`, default off). It is changed without an app update. Until Google approves the app, the flag stays off for the public: Google lets an unapproved app serve only owner-listed test users (up to 100), shows them a warning screen, caps new users at 100 over the project's lifetime, and expires their access after 7 days. So the flag is turned on only for testing, and a tester whose access expired sees "Reconnect" and reading pauses until they reconnect; forwarding is unaffected. A person not on the list is refused by Google and sees the connect error. Approval needs the owner's restricted-scope verification and a yearly outside security assessment (owner steps). With the flag off, the app hides the section and the backend refuses connect calls. If the flag is turned off after a kitchen connected, reading pauses until it is turned on again; tokens are kept (open question 7).
 13. If a kitchen's plan drops from Plus to free, both ways in stop (forwarding mail dropped, Gmail reading paused). Pending imports stay reviewable. Reverting to Plus resumes.
 14. The creator can make a new forwarding address; the old one immediately stops working (treated as unknown, rule 10).
 15. Abuse limit: each kitchen can have at most a server-set number of pending imports (placeholder 10) and a daily cap on imports (placeholder 20); beyond that mail is dropped. Imports never write items directly; a person always reviews first.
@@ -58,7 +58,7 @@ No golden screenshots exist (idea-first project). Screens are reached from Setti
 - Pending-import and daily caps are server settings.
 
 ## Copy
-Strings are in `docs/spec/copy/orders.md`, ids `orders.*`; the orchestrator merges them into COPY.md.
+Strings are in `docs/spec/COPY.md`, ids `orders.*`.
 
 ## Acceptance criteria
 - **AC-orders-1** Given a kitchen is created, when it is saved, then it has a unique forwarding address that does not contain the kitchen name, owner name or email.
@@ -89,13 +89,17 @@ Strings are in `docs/spec/copy/orders.md`, ids `orders.*`; the orchestrator merg
 - **AC-orders-26** Given a signed-in member of another kitchen, when they try to read this kitchen's imports or write an import with source "order", then the rules refuse it.
 - **AC-orders-27** Given a kitchen or an account is deleted, when deletion completes, then the kitchen's Gmail token, address mapping, seen-order keys and pending imports are gone.
 - **AC-orders-28** Given the device is offline, when the Orders screen is opened, then it shows the last known state with an offline banner, Copy works, and Connect, Disconnect and "Make a new address" are disabled with an explanation.
+- **AC-orders-29** Given the production server settings before Google approval, when the app is released to the public, then `gmailConnectEnabled` is off and no public user sees the Gmail section or can connect.
+- **AC-orders-30** Given a listed test user whose Gmail access expired after 7 days, when reading fails with an expired-access answer, then reading pauses, the Gmail section shows the error with "Reconnect" (`orders.gmail.expired`), forwarding still imports orders, and items already imported are unchanged.
+- **AC-orders-31** Given an account that is not on Google's test-user list, when the creator taps "Connect Gmail", then Google refuses, `orders.gmail.error` shows, and no token is stored.
+- **AC-orders-32** Given the Gmail section, when it shows, then its text says Google cannot limit access to one sender and that the Instacart limit is Kitchen's own filter (`orders.gmail.body`).
 
 ## Out of scope
 Other stores (2.0). Other mail providers for connect (forwarding works with any). Prices, totals and budgets from orders (2.0, price tracking). Quantities and units (items start as "plenty"). Reading older mail. Editing items inside the review list (`adding`). Order status tracking. Reading any other mail.
 
 ## Open questions
 1. **Where the screen lives.** Reading: Settings, row "Instacart orders", in lane ui-account.
-2. **Who manages it.** Reading: all members see the address; only the creator makes a new address and connects or disconnects Gmail.
+2. **Who manages it.** Settled at reconcile: all members see the address; only the creator makes a new address and connects or disconnects Gmail.
 3. **Google's forwarding-confirmation code (AC-orders-9).** Gmail will not forward until the user enters a code Google mails to the address. Reading: we show the code in-app and keep nothing else; this is a narrow exception to "not Instacart means ignored", owner to confirm.
 4. **Duplicates and later emails.** Reading: order number is the key (a fingerprint of item names and date if there is none); a pending import takes the latest list; a saved or discarded one is final.
 5. **Replaced and refunded items.** Reading: only delivered items import; replacements import under the new name; a refund email after saving does nothing.
@@ -103,6 +107,7 @@ Other stores (2.0). Other mail providers for connect (forwarding works with any)
 7. **Flag turned off after connecting.** Reading: reading pauses, tokens are kept, and it resumes when the flag is back on.
 8. **Caps.** Reading: placeholders 10 pending and 20 per day per kitchen, as server settings.
 9. **Pending imports that are never reviewed.** Reading: they stay until reviewed or discarded; `adding` may add an expiry.
-10. **Gmail permission level.** Reading: read-only Gmail access limited to Instacart-sender searches, pending Google's review and the yearly outside assessment (owner-only step).
+10. **Gmail permission level.** Reading: read-only Gmail access (restricted by Google), limited to Instacart-sender searches by our own filter, pending Google's review and the yearly outside assessment, which has a cost the owner must get a quote for (owner-only step). An on-device variant might avoid the assessment but cannot read mail in the background; ask Google before relying on it.
 11. **Spoofed or forwarded sender.** Forwarded copies come from the user, not Instacart, so the sender cannot always be checked. Reading: parse the order structure; a fake only yields a pending import the user reviews.
 12. **Rule 12 wording.** The flag-off-after-connect behavior is a choice made here (see 7).
+13. **Public release without Gmail.** Reading: launch with forwarding only; Gmail connect stays off until approval, which can take weeks and needs owner action.

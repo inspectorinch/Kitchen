@@ -123,6 +123,15 @@ adding.walkthrough-pantry-body: Take a photo of your pantry shelves.
 adding.walkthrough-skip-step: Skip this
 adding.walkthrough-skip-all: Skip for now
 adding.walkthrough-done: Your kitchen is ready.
+adding.consent.title: Before we read your photos
+adding.consent.body: To read photos and receipts, Kitchen sends the picture to an outside AI service. Only the picture is sent. It is deleted as soon as it has been read, and we never keep it.
+adding.consent.declineNote: You can still type items in and scan barcodes. You can change your mind in Settings.
+adding.consent.agree: Agree and continue
+adding.consent.decline: No thanks
+adding.consent.declined: No problem. Typing and barcodes still work.
+adding.consent.settings: Let Kitchen read my photos
+adding.consent.settingsHelp: Photos and receipts are sent to an outside AI service to be read, then deleted.
+adding.barcode-credit: Product data from Open Food Facts, under the Open Database License.
 
 ## orders
 orders.settings.row: Instacart orders
@@ -147,7 +156,9 @@ orders.address.new.confirm.body: The old address will stop working right away. U
 orders.address.new.confirm.yes: Make a new address
 orders.address.new.confirm.no: Keep the old one
 orders.gmail.heading: Connect Gmail instead
-orders.gmail.body: Kitchen can look for Instacart order emails in your Gmail. It only reads emails from Instacart, keeps only the items, and never looks at anything else.
+orders.gmail.body: Kitchen can look for Instacart order emails in your Gmail. Google can't limit access to one sender, so you'd be giving read access to your mail. Kitchen's own search only opens emails from Instacart and keeps only the items. That limit is ours, not Google's.
+orders.gmail.expired: Your Gmail access ran out. Reconnect to keep reading orders. Forwarding still works.
+orders.gmail.testOnly: Gmail connect is only open to invited testers for now.
 orders.gmail.connect: Connect Gmail
 orders.gmail.connecting: Connecting...
 orders.gmail.connected: Connected to {email}
@@ -251,6 +262,20 @@ recipes.dietGlutenFree: Gluten-free
 recipes.dietDairyFree: Dairy-free
 recipes.dietHalal: Halal
 recipes.dietKosher: Kosher
+recipes.sourceCredit: Recipe from {site}
+recipes.sourceLink: View original recipe
+recipes.attribution.provider: Recipe search powered by Spoonacular.
+recipes.onlineLabel: Online recipe
+recipes.report.action: Report this recipe
+recipes.report.title: What's wrong with this recipe?
+recipes.report.reasonUnsafe: It looks unsafe
+recipes.report.reasonOffensive: It's offensive
+recipes.report.reasonWrong: It's wrong or makes no sense
+recipes.report.reasonOther: Something else
+recipes.report.note: Tell us more (optional)
+recipes.report.send: Send report
+recipes.report.thanks: Thanks. We hid that recipe and we'll take a look.
+recipes.report.error: Couldn't send that. Try again.
 
 ## shopping-list
 list.tab: List
@@ -270,14 +295,14 @@ list.line.undo: Undo
 list.menu.new: Make a new list
 list.make.progress: Making your list...
 list.make.error: Couldn't make a new list. Your old list is still here. Try again.
-list.send.button: Send to Instacart
+list.send.button: Shop on Instacart
 list.send.progress: Getting your link...
 list.send.hint: Pick your store and check out on Instacart.
 list.send.none: Tick at least one item to send.
 list.send.error: Couldn't get your Instacart link. Your list is safe. Try again, or copy it instead.
 list.send.retry: Try again
 list.sent.note: Sent to Instacart {when}
-list.sent.again: Open Instacart again
+list.sent.again: Shop on Instacart
 list.sent.update: Update link
 list.copy.button: Copy
 list.copy.done: Copied
@@ -373,6 +398,14 @@ account.delete.reauth: Sign in again to confirm.
 account.delete.confirm: Delete my account
 account.delete.cancel: Keep my account
 account.delete.done: Your account is being deleted.
+account.web.title: Delete your Kitchen account
+account.web.body: Deleting your account removes your sign-in and your data. If your kitchen has only you in it, the kitchen and everything in it is deleted too. If you have a Plus subscription, cancel it in the Play Store or App Store, because deleting your account doesn't cancel it.
+account.web.signin: Sign in to delete
+account.web.confirm: Delete my account
+account.web.done: Your account is being deleted. You can close this page.
+account.web.error: We couldn't delete your account. Try again, or contact support.
+account.about.credits: Credits
+account.about.support: Contact support
 
 ## plus
 plus.allowance_scans: {left} of {total} scans left this month
@@ -428,9 +461,14 @@ plus.error_store: We could not reach the store. Try again.
 plus.error_verify: The purchase went through but we could not confirm it yet. Try Restore purchases.
 plus.offline: You are offline. Buying and restoring need a connection.
 plus.loading: Checking your plan
+plus.renewal: Renews automatically each month until you cancel. Cancel any time in the Play Store or App Store.
+plus.terms: Terms of use
+plus.privacy: Privacy policy
+plus.not_now: Not now
 
 ## ai-gateway
 gateway.limit-reached: You've used this month's scans. Plus gives you a lot more.
+gateway.consent-required: To read photos and receipts, please agree to AI reading first. You can still type items in and scan barcodes.
 gateway.unreadable: We couldn't read that one. Try a clearer photo. It didn't use up a scan.
 gateway.try-again: Something went wrong on our side. Please try again in a moment. It didn't use up a scan.
 gateway.sign-in: Please sign in to keep going.

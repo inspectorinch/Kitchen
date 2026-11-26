@@ -14,9 +14,11 @@ Nothing here is built until the owner approves the spec and plan (`specApproved`
 - [ ] Reference docs: spec-writers consolidate `DATA-MODEL.md`, `SECURITY.md`, `SCREENS.md` and `DESIGN.md` from the approved feature specs, until every PLAN item has a spec with AC ids.
 - [ ] Research notes for every external service, SDK or engine in the stack.
 - [ ] Firebase emulators start and the rules tests run against them.
+- [ ] Create the `android/` and `ios/` Capacitor projects from the harness (`npx cap add`).
 - [ ] Android SDK command-line tools and an emulator image installed; a hello-world flow runs on it. Owner guide for USB debugging. [blocked: needs the owner's computer]
+- [ ] Research gaps: app links for invite links on both platforms; Firebase Hosting for the public deletion page.
 - [ ] CI builds the Android debug build on every push; an iOS simulator build if the CI service allows it.
-- [ ] Bake-off harness: `evals/` runner with `evals:dry` on recorded answers; owner guide for adding their own receipts and fridge photos with the right answers, and for the vendor keys.
+- [ ] Owner guides for the bake-off: how to add your own receipts and kitchen photos with the right answers, and where the vendor keys go.
 - [ ] First retro, to record the baseline.
 
 ## Owner track (starts at approval, runs beside every phase; nothing waits on it)
@@ -52,10 +54,13 @@ Ends with: the app runs on your phone; you sign in, see the room, open the fridg
 Ends with: you photograph your own fridge and a real receipt, fix the review list, and your kitchen fills itself. The bake-off results are in front of you to choose the models.
 - [ ] Gateway providers for the vendors under test; the two-step receipt pipeline; metering with refunds (spec: ai-gateway, plus)
 - [ ] 🙋 Run the bake-off on your test set (owner starts it; it costs money). Choose the model per job and whether the two-step receipt pipeline stays.
+- [ ] Plan settings on the server (limits, price, product ids), every kitchen defaulting to free until Phase 7 (spec: plus)
+- [ ] App Check on the app and on every gateway call (spec: ai-gateway)
+- [ ] Photo upload to storage, deleted as soon as it has been read (spec: adding, ai-gateway)
+- [ ] Review list: unsure items first, fix, untick, save; merge into existing items (spec: adding)
 - [ ] Consent screen before the first photo is sent for reading (spec: adding; required by the App Store)
 - [ ] Photo scan, several photos into one review list (spec: adding)
 - [ ] Receipt scan (spec: adding)
-- [ ] Review list: unsure items first, fix, untick, save; merge into existing items (spec: adding)
 - [ ] Auto-sort into places and estimated expiry dates (spec: adding, kitchen)
 - [ ] Barcode scan with product lookup (spec: adding)
 - [ ] Allowance shown before a scan; the limit-reached state (spec: adding, plus)
@@ -64,7 +69,8 @@ Ends with: you photograph your own fridge and a real receipt, fix the review lis
 
 ## Phase 3: A family kitchen
 Ends with: two phones show the same kitchen live.
-- [ ] Invite by link and by code; joining; the free limit of 2 people (spec: accounts-family, plus)
+- [ ] Invite by code; joining; the free limit of 2 people (spec: accounts-family, plus)
+- [ ] Invite links that open the app on both platforms (spec: accounts-family)
 - [ ] Roles, removing a member, leaving a kitchen (spec: accounts-family)
 - [ ] Settings tab: kitchen name, notification settings (spec: accounts-family)
 - [ ] Push notifications: daily expiry digest, someone joined (spec: accounts-family)
@@ -80,6 +86,7 @@ Ends with: you cook a real dinner from what the app says you have.
 - [ ] Cook mode with the screen kept awake (spec: recipes)
 - [ ] "I cooked this" sheet with guesses and item swaps (spec: recipes)
 - [ ] Favorites (spec: recipes)
+- [ ] The expiry digest notification opens a "use these up" recipe (spec: recipes, accounts-family)
 - [ ] 🙋 Check-in 4: ask for a recipe, cook it, confirm what was used.
 
 ## Phase 5: The shopping list and Instacart
@@ -99,7 +106,7 @@ Ends with: you forward a real Instacart order email and its items appear for rev
 
 ## Phase 7: Plus
 Ends with: a sandbox purchase unlocks Plus for the whole kitchen, and a lapse locks the right things without deleting anything.
-- [ ] Plan settings on the server; every Free vs Plus row enforced in the backend and the rules (spec: plus)
+- [ ] Every Free vs Plus row enforced in the backend and the rules, read from the plan settings (spec: plus)
 - [ ] The Plus screen and the limit-reached sheet (spec: plus)
 - [ ] Store subscriptions through the purchases adapter; restore; entitlement written by the backend (spec: plus)
 - [ ] Lapse and refund behavior (spec: plus)

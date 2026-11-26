@@ -2,21 +2,21 @@
 Area id: `ai-gateway` · Status: launch · Source: PRODUCT.md ("In the first release" ai-gateway; owner decisions 20, 21; open questions 1 to 3), ARCHITECTURE.md ("The AI gateway", adapters table, layout)
 
 ## What it's for
-The app never talks to an AI vendor and never sends a prompt. It asks the backend for one of four jobs and always gets the same shaped answer, whichever vendor did the work. Which vendor and model does each job is a server setting, so it changes without an app-store update. The gateway also counts usage per kitchen and is a shared package the owner's other apps can install in their own backends.
+The app never talks to an AI vendor and never sends a prompt. It asks the backend, through callable functions, for one of four jobs and always gets the same shaped answer, whichever vendor did the work. Which vendor and model does each job is a server setting, so it changes without an app-store update. The gateway also counts usage per kitchen and is a shared package the owner's other apps can install in their own backends.
 
 ## Who gets what
 - Signed-in members of a kitchen (with a valid App Check token) may call any job. Signed-out or unattested callers get nothing.
-- Free vs Plus differ only in the allowance the metering step reads (PRODUCT.md "Free vs Plus"). Placeholders: free 10 scans and 10 AI recipes per kitchen per month, Plus 200 and 200 (open question 2 in PRODUCT.md; server settings).
+- Free vs Plus differ only in the allowance the metering step reads (PRODUCT.md "Free vs Plus"). Placeholders: free 10 scans and 10 AI recipes per kitchen per month, Plus 200 and 200 (open question 2 in PRODUCT.md), held in the server settings document `config/plans` with the counters `scans` and `aiRecipes` in `usage/{yyyy-mm}` (settled at reconcile).
 - Offline: jobs need a connection; the app shows the offline state itself (owner decision 14).
 
 ## Screens and states
-None: backend. The app shows the result states below using copy ids from `docs/spec/copy/ai-gateway.md`: ok, unreadable, limit reached, error.
+None: backend. The app shows the result states below using copy ids from `docs/spec/COPY.md`: ok, unreadable, limit reached, error.
 
 ## How it behaves
 Rule numbers are referenced by the ACs.
 
 ### The four jobs and their shapes
-Every job returns one **envelope**: `status` is `"ok"`, `"unreadable"` (photo jobs only) or `"error"`. An `"error"` has `code`, one of `limit-reached`, `unauthenticated`, `app-check-failed`, `bad-input`, `bad-answer`, `timeout`, `unavailable`. Only `"ok"` carries the job's output.
+Every job returns one **envelope**: `status` is `"ok"`, `"unreadable"` (photo jobs only) or `"error"`. An `"error"` has `code`, one of `limit-reached`, `consent-required`, `unauthenticated`, `app-check-failed`, `bad-input`, `bad-answer`, `timeout`, `unavailable`. Only `"ok"` carries the job's output.
 
 1. **readReceipt** (PRODUCT.md journey 5; decision 21)
    - Input: `kitchenId`, `image` (one receipt photo, reference to the uploaded file).
@@ -51,12 +51,13 @@ Every job returns one **envelope**: `status` is `"ok"`, `"unreadable"` (photo jo
 15. Items whose confidence is below a server threshold are returned with `unsure: true` (default threshold 0.6; the review list shows unsure items first).
 
 ### Metering (decisions 18, 20)
-16. Before any vendor call, the gateway asks the kitchen's metering (supplied by Kitchen's `functions/src/metering/`) to reserve one unit: one scan for `readReceipt` and `readKitchenPhoto`, one AI recipe for `writeRecipe`. `findSubstitutions` uses no allowance.
+16. Before any vendor call, the gateway asks the kitchen's metering (supplied by Kitchen's `functions/src/metering/`) to reserve one unit: one scan (field `scans`) for `readReceipt` and `readKitchenPhoto`, one AI recipe (`aiRecipes`) for `writeRecipe`. One photo is one scan. `findSubstitutions` and the weekly Plus "use these up" suggestions use no allowance and are not metered (settled at reconcile). Limits are read from `config/plans`.
 17. When the allowance is used up, no vendor is called and the result is `error` with code `limit-reached`.
 18. The reserved unit is refunded when the result is `unreadable` or any `error`. Fallbacks and the one malformed-answer retry never charge twice.
 
 ### Gates, keys, photos
-19. Every call requires a signed-in user who is a member of `kitchenId` and a valid App Check token. Otherwise `unauthenticated` or `app-check-failed`, with no metering and no vendor call.
+19. Every call requires a signed-in user who is a member of `kitchenId` and a valid App Check token. Otherwise `unauthenticated` or `app-check-failed`, with no metering and no vendor call. Kitchen exposes each job as a callable function (not an HTTP endpoint), with App Check enforcement switched on for it, because Firebase's App Check enforcement covers callable functions, Firestore and Storage only (docs/research/app-stack.md). The emulator skips the enforcement, so tests check the setting, not the refusal.
+19a. The two photo jobs also require that the caller's account has recorded AI-reading consent (`users/{uid}.aiConsent.granted`, see `adding`). Without it the result is `error` `consent-required`, with no metering, no image read and no vendor call.
 20. Vendor keys exist only on the server (secrets store); no key, prompt or vendor name appears in any response or in app code.
 21. A photo is deleted from storage as soon as the job finishes, whether it succeeded, was unreadable or failed. Photos are never kept (PRODUCT.md "Never").
 22. Each vendor call has a timeout (defaults below). A timeout counts as a failure of that provider for fallback; with no provider left the result is `timeout`.
@@ -86,7 +87,7 @@ Every job returns one **envelope**: `status` is `"ok"`, `"unreadable"` (photo jo
 - One image per call; several photos are several calls, each metered.
 
 ## Copy
-`gateway.limit-reached`, `gateway.unreadable`, `gateway.try-again`, `gateway.sign-in`, `gateway.app-check`, `gateway.bad-input` in `docs/spec/copy/ai-gateway.md`. Mapping: `limit-reached` to `gateway.limit-reached`; `unreadable` to `gateway.unreadable`; `bad-answer`, `timeout`, `unavailable` to `gateway.try-again`; `unauthenticated` to `gateway.sign-in`; `app-check-failed` to `gateway.app-check`; `bad-input` to `gateway.bad-input`.
+`gateway.limit-reached`, `gateway.consent-required`, `gateway.unreadable`, `gateway.try-again`, `gateway.sign-in`, `gateway.app-check`, `gateway.bad-input` in `docs/spec/COPY.md`. Mapping: `limit-reached` to `gateway.limit-reached`; `consent-required` to `gateway.consent-required`; `unreadable` to `gateway.unreadable`; `bad-answer`, `timeout`, `unavailable` to `gateway.try-again`; `unauthenticated` to `gateway.sign-in`; `app-check-failed` to `gateway.app-check`; `bad-input` to `gateway.bad-input`.
 
 ## Acceptance criteria
 - **AC-gateway-1** Given a signed-in member with App Check, when `readReceipt` is called with a receipt image and the stand-in answers, then the envelope is `ok` and each item has `name`, `category`, `confidence` between 0 and 1 and `unsure`. (rule 1)
@@ -127,6 +128,10 @@ Every job returns one **envelope**: `status` is `"ok"`, `"unreadable"` (photo jo
 - **AC-gateway-36** Given no keys and no network, when `npm run evals:dry` runs, then it replays recorded answers, makes no paid call and prints a ranking. (rule 28)
 - **AC-gateway-37** Given a paid run, when it is requested by anything but the owner starting it by hand, then it refuses to run. (rule 29)
 - **AC-gateway-38** Given a finished paid run, when it ends, then results are in `evals/results/<date>.md` and an earlier file with the same date is not overwritten. (rule 29)
+- **AC-gateway-39** Given the Kitchen functions, when the four jobs are listed, then each is a callable function and none is exposed as an open HTTP endpoint. (rule 19)
+- **AC-gateway-40** Given the deployed function configuration, when each job callable is inspected, then App Check enforcement is on. (rule 19)
+- **AC-gateway-41** Given a signed-in member whose account has no recorded consent, when `readReceipt` or `readKitchenPhoto` is called, then the result is `error` `consent-required` with nothing metered, read or sent to a vendor; and `writeRecipe` and `findSubstitutions` are not affected by this rule. (rule 19a)
+- **AC-gateway-42** Given metering runs for any job, when usage is written, then only `scans` and `aiRecipes` change, the limits are read from `config/plans`, and `findSubstitutions` and the weekly suggestions change neither. (rule 16)
 
 ## Out of scope
 - Prices and final allowances (set after the bake-off, server settings).
@@ -136,9 +141,10 @@ Every job returns one **envelope**: `status` is `"ok"`, `"unreadable"` (photo jo
 - Streaming answers; images other than still photos.
 
 ## Open questions
-1. Does `findSubstitutions` use allowance? Chosen: no, only scans and AI recipes are in the Free vs Plus table.
+1. Does `findSubstitutions` use allowance? Settled at reconcile: no, only scans and AI recipes are in the Free vs Plus table.
 2. Timeouts (20/30/45/20 s, 60 s overall) and the 0.6 unsure threshold are guesses; the bake-off should tune them.
 3. Image format and size limit are not in the sources. Chosen: the app downsizes to a sensible size before upload; the gateway rejects oversize images as `bad-input`. The limit number is for the architect.
 4. Where the owner's test set lives. Chosen: in `evals/` but not committed to any public repo; the owner supplies it.
 5. Should the bake-off keep the two-step receipt pipeline only if it earns its cost? Chosen: the owner decides from the dated results file; the default stays `service-then-ai` until then.
 6. Merge rule when the service and AI pass disagree on an item. Chosen: the AI check pass output wins and the merged item list is what is returned.
+7. Consent for recipe jobs. `writeRecipe` also sends item names and allergy settings to an AI vendor; rule 19a covers only the photo jobs, as asked. Owner to say if recipes need consent too (privacy). Same question as `adding` open question 12.

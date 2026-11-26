@@ -60,7 +60,7 @@ Names follow ARCHITECTURE.md "Data model (outline)"; DATA-MODEL.md has the detai
 - No scan allowance is used by anything in this area. Tracking, removing and manual add are unlimited on both tiers.
 
 ## Copy
-Strings are in `docs/spec/copy/kitchen.md` with ids `kitchen.*`. Specs refer to them by id.
+Strings are in `docs/spec/COPY.md` with ids `kitchen.*`. Specs refer to them by id.
 
 ## Acceptance criteria
 Room and places
@@ -127,6 +127,8 @@ Sync, errors, wording
 - **AC-kitchen-47** Given a write rejected while online, when the rejection arrives, then the on-screen change is rolled back and `kitchen.error.save` is shown.
 - **AC-kitchen-48** Given light and dark themes, when any screen in this area is shown, then all text and marks stay readable in both themes.
 - **AC-kitchen-49** Given a free or Plus kitchen, when tracking, removing or adding by hand, then no scan allowance is used and no limit message appears.
+- **AC-kitchen-50** Given a member who is not the creator, when they add, rename or delete a custom place or change kitchen settings, then it succeeds (within the plan's place limit).
+- **AC-kitchen-51** Given an item was removed, when its document is read, then it still exists with `amount` out and `ranOutAt` set, is absent from every kitchen view and search, is not deleted by any job, and is readable by the shopping-list generation.
 
 ## Out of scope
 - Adding flows (manual form, barcode, photo, receipt, review list, walk-through, auto-sorting into places): adding area. This area only provides the places, the "Add an item" entry and offline display.
@@ -137,13 +139,13 @@ Sync, errors, wording
 - Real artwork; final animation.
 
 ## Open questions
-1. **Removed items.** Reading: removal sets `amount` to out and keeps the item hidden so the shopping list can find it; the shopping-list area decides when hidden items are purged. Alternative: delete at once and keep a separate ran-out record.
+1. **Removed items.** Settled at reconcile: removal keeps the item, hidden, with `amount` out and `ranOutAt` set; the shopping list reads it from there; hidden items are not purged in the first release.
 2. **Undo time.** Reading: 6 seconds.
 3. **Shelf ordering.** Reading: 3 per row, soonest expiry first, then name. The list view is A to Z (not by expiry). Both easy to change.
 4. **Deleting a custom place.** Reading: confirm, then move its items to the Pantry. Alternatives: block deletion unless empty, or delete the items.
 5. **Offline editing.** Reading: only view, remove and manual add work offline, as the owner listed; edits, moves and place changes wait for a connection. Firestore could queue those too; say if you want that.
 6. **Where custom places sit in the room.** Reading: a row of tiles under the scene, not drawn furniture, so any number fits.
 7. **Standard places can't be hidden or renamed.** Reading: always shown.
-8. **Who can manage places.** Reading: every member (PRODUCT.md open question 10 says everyone adds and removes; it is silent on places).
+8. **Who can manage places.** Settled at reconcile: every member (and kitchen settings, and diet and allergy settings); only the creator invites, removes members, manages Plus, regenerates the forwarding address, connects Gmail and deletes the kitchen.
 9. **Name limits.** Reading: item names 60 characters, place names 24.
 10. **Expiry estimates for non-fresh items.** Reading: none; the category table lives in the adding area.

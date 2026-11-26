@@ -2,12 +2,12 @@
 Area id: `accounts-family` · Status: launch · Source: PRODUCT.md ("In the first release" accounts-family; "Money, accounts and data"; owner decisions 8, 13, 19; open questions 5, 9, 10), ARCHITECTURE.md (data model, access rules)
 
 ## What it's for
-Sign-in, the one kitchen each account has, sharing that kitchen with family, the Settings tab, the three notifications, and deleting your account and data from inside the app. Code lives in `src/features/account/` (lane ui-account) with backend pieces in `functions/src/notifications/` and rules.
+Sign-in, the one kitchen each account has, sharing that kitchen with family, the Settings tab, the three notifications, and deleting your account and data from inside the app and from a public web page. Code lives in `src/features/account/` (lane ui-account) with backend pieces in `functions/src/notifications/` and rules.
 
 ## Who gets what
 - Signed out: only the sign-in screen, terms and privacy links. Nothing else is reachable.
-- Every signed-in member: sees and edits items, places and the shopping list; sees members; changes own notification settings; leaves the kitchen (if not the creator); deletes own account.
-- Creator only: creates invites, removes members, manages Plus, deletes the kitchen.
+- Every signed-in member: sees and edits items, places and the shopping list; changes kitchen settings (name, expiring-soon days), places, and diet, allergy and dislike settings; sees members; changes own notification settings and own photo-reading consent; leaves the kitchen (if not the creator); deletes own account. (Settled at reconcile.)
+- Creator only: creates invites, removes members, manages Plus, regenerates the forwarding address, connects and disconnects Gmail, deletes the kitchen. (Settled at reconcile.)
 - Free kitchen: up to 2 people. Plus: whole family (no number set here; see the `plus` area).
 - Age: 13 and over. There are no child accounts.
 - Offline: already signed-in users keep working (view, remove, manual add are the kitchen area's rules). Sign-in, sign-up, password reset, invites, joining, leaving and deletion need a connection.
@@ -18,19 +18,20 @@ Golden screenshots do not exist yet (idea-first project); the screens are listed
 2. **Create account**: email, password (8+ characters), the 13+ line with Terms and Privacy links.
 3. **Reset password**: email field, "sent" confirmation.
 4. **Join a kitchen**: opened from a link or from "Have a code?" on Settings and on the sign-in screen's after-sign-in step. States: checking, confirm join, confirm join that replaces your kitchen, code invalid or expired, code already used, kitchen full, you are already in this kitchen, no connection.
-5. **Settings tab** sections in order: Account, Kitchen, Family, Notifications, Plus (entry only; screen belongs to `plus`), Diet and allergies (entry only; screen belongs to `recipes`), About (Terms, Privacy policy, version), Delete account.
+5. **Settings tab** sections in order: Account (includes the "Let Kitchen read my photos" switch, see `adding`), Kitchen, Family, Notifications, Plus (entry only; screen belongs to `plus`), Diet and allergies (entry only; screen belongs to `recipes`), About (Terms, Privacy policy, credits such as the Open Food Facts line, support contact, version), Delete account.
 6. **Family** (inside Settings): member list with the creator marked; creator sees "Invite", a remove control per member, the current code and link with expiry; members see the list and "Leave kitchen".
 7. **Invite sheet**: link share button, 6-character code with copy, expiry line.
 8. **Notifications** (inside Settings): three switches, digest time picker, a banner when the phone's permission is off.
 9. **Delete account sheet**: what will be deleted, subscription reminder, confirm and cancel. Different text for: alone, creator with members, member.
 10. **Delete kitchen sheet** (creator only), and **Leave kitchen sheet** (member only).
+11. **Public deletion page** (a plain web page on Firebase Hosting, not part of the app, reachable with no app and no sign-in to read): explains what is deleted, that a store subscription must be cancelled in the store, and lets the person sign in (Google, Apple, or email and password) and delete their account. States: explanation, signing in, confirm, done, error.
 
 ## How it behaves
 Numbers are cited by their source: P = PRODUCT.md line, D# = owner decision, Q# = open question, A = ARCHITECTURE.md, C = a choice made here (listed under Open questions).
 
 Sign-in
 1. Sign-in is required at first launch; no kitchen content is visible before it. (P accounts-family, D13)
-2. Providers: Google, Apple, email and password. (D13, A Auth)
+2. Providers: Google, Apple, email and password. (D13, A Auth) Sign in with Apple is mandatory on iOS because Google sign-in is offered (App Store rule 4.8); it is shown on the sign-in screen on every platform. It returns name and email only, and a hidden "private relay" email is accepted as is. Native sign-in hands its credential to the Firebase JS SDK (docs/research/capacitor-plugins.md).
 3. Email accounts need no email verification; password reset by emailed link. (C1)
 4. Signing out returns to the sign-in screen and removes the local cache of the kitchen from the phone; the kitchen itself is untouched. (C2)
 5. One email address maps to one sign-in method; trying another method for the same email shows an error naming nothing private. (C3)
@@ -56,7 +57,7 @@ Inviting and joining
 17. Someone already in this kitchen who opens its invite is told so; nothing changes.
 
 Roles
-18. Every member can add, edit and remove items and places and use the shopping list; members cannot change `memberUids`, `plan`, `ownerUid`, nor delete the kitchen. (Q10, A access rules)
+18. Every member can add, edit and remove items and places and use the shopping list; members cannot change `memberUids`, `plan`, `ownerUid`, nor delete the kitchen, and cannot invite, remove members, manage Plus, regenerate the forwarding address or connect Gmail. (Q10, A access rules; settled at reconcile)
 19. Only the creator removes members. A removed person is signed in as before, is given a new kitchen with the four standard places the next time the app is open or live, and sees a short message that they were removed. (Q10, C9)
 20. Any member can rename the kitchen and change diet, allergy, expiring-soon and other kitchen settings. (C10)
 21. The creator cannot leave while other members exist; they delete the kitchen or remove members. A creator alone has no "Leave", only "Delete kitchen". (C11)
@@ -89,6 +90,10 @@ Deleting
 40. A creator with members who deletes: the sheet says the kitchen will be deleted for everyone, giving the count of other members. Confirming deletes the kitchen as in rule 23; each member gets a new kitchen. No ownership transfer in the first release. (C12)
 41. Deletion finishes in the background after the app signs the person out; the app does not wait. Deleting the account deletes its data, "data deletion" is not a separate action. (C18)
 42. Photos are never kept by this area; nothing to delete there. (P Never)
+43. A public web page for account deletion exists in addition to the in-app button, because Google Play requires a web link people can use without the app, declared in the Data safety form (docs/research/store-requirements.md). It lives on Firebase Hosting at a stable address, which is also named in the privacy policy and the store forms. It states what is deleted and that a store subscription is not cancelled by deleting.
+44. On the page the person signs in with the same method as in the app and confirms; it then calls the same `deleteAccount` function as the app, so rules 36 to 41 apply unchanged (a recent sign-in is the sign-in on the page; the Apple token is revoked). Deleting from the page signs the person out of the page and shows a done message. It is only a sign-in and delete form, not a web version of the app (open question C20).
+45. Photo-reading consent (`adding`) is stored on `users/{uid}` (`aiConsent`) and changed by the Account section switch; deleting the account deletes it.
+46. About shows the credit line for Open Food Facts (`adding.barcode-credit`) and a support contact (app stores expect one).
 
 ## Data
 Reads and writes, names as in ARCHITECTURE.md (DATA-MODEL.md has the detail):
@@ -106,7 +111,7 @@ Reads and writes, names as in ARCHITECTURE.md (DATA-MODEL.md has the detail):
 - Age: 13+, stated at account creation.
 
 ## Copy
-All ids are in `docs/spec/copy/accounts-family.md` (`account.*`); the orchestrator merges them into COPY.md.
+All ids are in `docs/spec/COPY.md` (`account.*`).
 
 ## Acceptance criteria
 - **AC-account-1** Given a first launch with no session, when the app opens, then only the sign-in screen is shown and no tab or kitchen content is reachable.
@@ -163,6 +168,12 @@ All ids are in `docs/spec/copy/accounts-family.md` (`account.*`); the orchestrat
 - **AC-account-52** Given an Apple sign-in account is deleted, then the Apple token is revoked.
 - **AC-account-53** Given account deletion is confirmed, then the user is signed out immediately and the sign-in screen is shown, with the same email able to create a new account afterwards.
 - **AC-account-54** Given the app's Terms and Privacy rows in About, then both open and are reachable before sign-in from the sign-in screen.
+- **AC-account-55** Given a person with no app installed, when they open the public deletion page address, then it loads without signing in and states what is deleted, that a store subscription must be cancelled in the store, and offers sign-in to delete (`account.web.*`).
+- **AC-account-56** Given the person signs in on the deletion page and confirms, when it completes, then the same data is deleted as from the app (identity, `users/{uid}`, push tokens; member leaves, sole creator's kitchen deleted, creator with members as in AC-account-51) and the Apple token is revoked for an Apple account.
+- **AC-account-57** Given an iOS build, when the sign-in screen shows, then "Continue with Apple" is present alongside Google, and its sign-in lands in the kitchen like the others.
+- **AC-account-58** Given the Account section of Settings, when it shows, then a switch for photo and receipt reading shows the current consent and changing it updates `users/{uid}.aiConsent`.
+- **AC-account-59** Given About, when it shows, then it includes the Open Food Facts credit and a support contact.
+- **AC-account-60** Given a member who is not the creator, when they change kitchen settings, places, or diet, allergy and dislike settings, then it succeeds; and when they call create invite, remove member, regenerate forwarding address, connect Gmail, manage Plus or delete kitchen, then it is refused.
 
 ## Out of scope
 Child accounts under 13; more than one kitchen per account; transferring creator role; phone-number sign-in; two-factor; email verification; other notification types; social features; the Plus purchase flow (`plus`); the diet and allergy screen (`recipes`); the forwarding address and order intake (`orders`); the walk-through (`adding`).
@@ -178,14 +189,16 @@ Choices made here where PRODUCT.md is silent; the owner can overturn any.
 - C7 Third person on a full free kitchen sees "full, ask the creator for Plus"; invite not consumed.
 - C8 Joining while already in a kitchen: empty own kitchen is silently replaced; non-empty own kitchen needs a data-loss confirm; a member of another kitchen leaves it; a creator with other members is blocked.
 - C9 Removed or leaving members get a fresh kitchen; they do not take items with them.
-- C10 Any member can rename the kitchen and change its settings (diets, allergies, expiring-soon days).
+- C10 Any member can rename the kitchen and change its settings (diets, allergies, expiring-soon days) and places. Settled at reconcile.
 - C11 The creator cannot leave; no ownership transfer.
 - C12 When a creator deletes their account, the shared kitchen is deleted for everyone (no transfer). Members are warned only by the creator's sheet, and get a new kitchen.
 - C13 Digest skips days with nothing expiring.
-- C14 "Someone joined" goes to the creator only; "order ready" to all members.
+- C14 "Someone joined" goes to the creator only; "order ready" to all members. Settled at reconcile.
 - C15 Notification permission asked once after the walk-through.
 - C16 Account deletion needs recent sign-in and does not cancel the store subscription.
 - C17 A deleted member's added items stay in the kitchen.
 - C18 Deletion finishes in the background; no separate "delete data only".
 - C19 Invite guessing limit: 10 wrong codes per hour per account.
+- C20 The deletion web page signs the person in on the page and calls the same delete function. This is a web page, but not a web version of the app (a scope guard); owner to confirm it counts as allowed. The simpler alternative is a page that only explains and asks for an emailed request, but Google and Apple accounts may have hidden emails.
+- C21 "Continue with Apple" is shown on Android too (Apple only requires it on iOS); Android needs a web sign-in flow for it, so it could be hidden there.
 - Whole-family cap for Plus is not stated in PRODUCT.md; left to `plus`.
